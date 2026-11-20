@@ -1,0 +1,41 @@
+/* Shared form layout for event-form.component.css and event-details.component.css */
+.form-grid, .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.full-span, .full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.range-error {
+  color: #FF7A2F;
+  font-size: 0.82rem;
+  margin: -0.25rem 0 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.telemetry-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  background: #140C28;
+  border: 1px solid #302157;
+  font-size: 0.82rem;
+  margin: 0.75rem 0;
+}
+
+.template-form {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #382864;
+}

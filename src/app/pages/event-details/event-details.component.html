@@ -1,0 +1,128 @@
+<section class="details-card">
+  <header class="details-header">
+    <span class="date-badge">{{ event.date }} · {{ event.timeWindow }}</span>
+    <h2>{{ planetGlyphs[event.transitingPlanet] }} {{ event.title }}</h2>
+    <p class="subtitle">{{ event.subtitle }}</p>
+  </header>
+
+  <div class="telemetry-row">
+    <div>
+      <strong>House Activated:</strong> {{ houseThemes[event.houseActivated].name }}
+      ({{ houseThemes[event.houseActivated].focus }})
+    </div>
+    <div>
+      <strong>Degree:</strong> {{ formatDegree(event.transitingDegree) }}
+      {{ zodiacGlyphs[event.transitingSign] }} {{ event.transitingSign }}
+    </div>
+  </div>
+
+  <p class="summary-text">{{ event.summary }}</p>
+
+  <!-- TEMPLATE-DRIVEN FORM: Ritual RSVP, Email Alert & Reflection Log -->
+  <form #ritualForm="ngForm" (ngSubmit)="submitRitualRsvp(ritualForm)" class="template-form">
+    <h3>Alignment Ritual RSVP &amp; Reflection Check-In</h3>
+    <p class="ritual-lead">Recommended Ritual: <strong>{{ event.ritualTitle }}</strong> ({{ event.ritualDuration }})</p>
+
+    <!-- Actionable Ritual Checklist (3 Related Checkboxes) -->
+    <div class="ritual-checklist">
+      @for (step of event.ritualSteps; track $index) {
+        <div
+          class="ritual-step-box"
+          [class.step-done]="isStepCompleted($index)"
+          (click)="toggleStep($index)"
+        >
+          <mat-checkbox
+            [checked]="isStepCompleted($index)"
+            (click)="$event.stopPropagation()"
+            (change)="toggleStep($index)"
+          >
+            <span [class.strikethrough]="isStepCompleted($index)">{{ step }}</span>
+          </mat-checkbox>
+        </div>
+      }
+    </div>
+    
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>RSVP Status</mat-label>
+        <mat-select name="status" [(ngModel)]="rsvpModel.status" required>
+          <mat-option value="committed">Committed</mat-option>
+          <mat-option value="completed">Completed</mat-option>
+          <mat-option value="uncommitted">Not RSVP'd</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Scheduled Ritual Time</mat-label>
+        <input matInput type="time" name="scheduledTime" [(ngModel)]="rsvpModel.scheduledTime" required />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Transit Alert Email (Optional)</mat-label>
+      <input
+        matInput
+        type="email"
+        name="reminderEmail"
+        [(ngModel)]="rsvpModel.reminderEmail"
+        #emailField="ngModel"
+        email
+        placeholder="you@example.com"
+      />
+      @if (emailField.invalid && emailField.touched) {
+        <mat-error>Please enter a valid email address format.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Personal Intention *</mat-label>
+      <input
+        matInput
+        type="text"
+        name="intention"
+        [(ngModel)]="rsvpModel.intention"
+        #intentionField="ngModel"
+        required
+        minlength="5"
+        placeholder="e.g., Honor somatic pacing during this Chiron aspect"
+      />
+      @if (intentionField.hasError('required') && intentionField.touched) {
+        <mat-error>Please enter a personal intention to commit to this ritual.</mat-error>
+      }
+      @if (intentionField.hasError('minlength') && intentionField.touched) {
+        <mat-error>Intention must be at least 5 characters.</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Energetic Resonance</mat-label>
+        <mat-select name="resonance" [(ngModel)]="rsvpModel.resonance">
+          @for (tag of resonanceOptions; track tag) {
+            <mat-option [value]="tag">{{ tag }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Personal Reflection Note</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        name="reflectionContent"
+        [(ngModel)]="rsvpModel.reflectionContent"
+        placeholder="Log dreams, physical sensations, or creative insights..."
+      ></textarea>
+    </mat-form-field>
+
+    <button
+      mat-flat-button
+      type="submit"
+      class="primary-lime-btn"
+      [disabled]="ritualForm.invalid || isSavingRsvp"
+    >
+      {{ isSavingRsvp ? 'Saving...' : 'Save RSVP & Reflection' }}
+    </button>
+  </form>
+</section>

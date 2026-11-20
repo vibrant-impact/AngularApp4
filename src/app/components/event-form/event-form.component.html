@@ -1,0 +1,135 @@
+<form [formGroup]="alignmentForm" (ngSubmit)="submitAlignmentForm()" class="cosmic-form">
+  <div class="form-grid">
+    <!-- Title with Async Uniqueness Validation -->
+    <mat-form-field appearance="outline" class="full-span">
+      <mat-label>Cosmic Alignment / Event Title</mat-label>
+      <input
+        matInput
+        formControlName="title"
+        placeholder="e.g., Chiron in Taurus Somatic Grounding"
+      />
+      @if (alignmentForm.controls.title.pending) {
+        <mat-hint>Checking ephemeris catalog for duplicate titles...</mat-hint>
+      }
+      @if (alignmentForm.controls.title.hasError('required')) {
+        <mat-error>An alignment title is required.</mat-error>
+      }
+      @if (alignmentForm.controls.title.hasError('minlength')) {
+        <mat-error>Title must be at least 3 characters long.</mat-error>
+      }
+      @if (alignmentForm.controls.title.hasError('duplicateAlignmentTitle')) {
+        <mat-error>An alignment or transit with this exact title already exists.</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Start Date Picker -->
+    <mat-form-field appearance="outline">
+      <mat-label>Peak / Start Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" formControlName="date" />
+      <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+      @if (alignmentForm.controls.date.hasError('required')) {
+        <mat-error>Start date is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Optional End Date Picker (Cross-Field Validated) -->
+    <mat-form-field appearance="outline">
+      <mat-label>End Date (Optional for Retrograde Spans)</mat-label>
+      <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    @if (alignmentForm.hasError('invalidDateRange') && alignmentForm.controls.endDate.touched) {
+      <p class="range-error full-span">
+        End date cannot be earlier than the peak/start date.
+      </p>
+    }
+
+    <!-- Category Select -->
+    <mat-form-field appearance="outline">
+      <mat-label>Event Category</mat-label>
+      <mat-select formControlName="category">
+        @for (option of categoryOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Zodiac Sign Select -->
+    <mat-form-field appearance="outline">
+      <mat-label>Zodiac Sign Resonance</mat-label>
+      <mat-select formControlName="sign">
+        @for (sign of zodiacSigns; track sign) {
+          <mat-option [value]="sign">{{ sign }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Time Window Select -->
+    <mat-form-field appearance="outline">
+      <mat-label>Energetic Time Window</mat-label>
+      <mat-select formControlName="timeWindow">
+        @for (window of timeWindows; track window) {
+          <mat-option [value]="window">{{ window }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Ritual Title -->
+    <mat-form-field appearance="outline">
+      <mat-label>Alignment Ritual Name</mat-label>
+      <input
+        matInput
+        formControlName="ritualTitle"
+        placeholder="e.g., Earth & Cedar Nervous System Reset"
+      />
+      @if (alignmentForm.controls.ritualTitle.hasError('required')) {
+        <mat-error>Please name the accompanying alignment ritual.</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Summary -->
+    <mat-form-field appearance="outline" class="full-span">
+      <mat-label>Astrological Meaning &amp; Intention Summary</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        formControlName="summary"
+        placeholder="Describe the planetary theme or personal focus..."
+      ></textarea>
+      @if (alignmentForm.controls.summary.hasError('required')) {
+        <mat-error>Summary is required.</mat-error>
+      }
+      @if (alignmentForm.controls.summary.hasError('minlength')) {
+        <mat-error>Please write at least 10 characters.</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Ritual Steps -->
+    <mat-form-field appearance="outline" class="full-span">
+      <mat-label>Actionable Ritual Steps (one per line)</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        formControlName="ritualStepsText"
+        placeholder="Step 1: Light a candle&#10;Step 2: Journal for 10 minutes"
+      ></textarea>
+    </mat-form-field>
+  </div>
+
+  <div class="form-actions">
+    <button mat-stroked-button type="button" (click)="cancelled.emit()">
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      type="submit"
+      class="primary-lime-btn"
+      [disabled]="isSubmitting || alignmentForm.pending"
+    >
+      {{ isSubmitting ? 'Syncing Ephemeris...' : 'Create Cosmic Alignment' }}
+    </button>
+  </div>
+</form>

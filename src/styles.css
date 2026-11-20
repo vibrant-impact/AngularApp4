@@ -1,1 +1,81 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #120B24;
+  color: #F6F3FF;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mdc-outlined-text-field-outline-color: #46337A;
+  --mdc-outlined-text-field-focus-outline-color: #B8FF3B;
+  --mdc-outlined-text-field-input-text-color: #F6F3FF;
+  --mdc-outlined-text-field-label-text-color: #BEB4DE;
+  --mdc-outlined-text-field-focus-label-text-color: #B8FF3B;
+  --mat-select-enabled-trigger-text-color: #F6F3FF;
+  --mat-select-panel-background-color: #1B1233;
+  --mat-option-label-text-color: #F6F3FF;
+  --mat-datepicker-calendar-container-background-color: #1B1233;
+  --mat-datepicker-calendar-body-label-text-color: #F6F3FF;
+  --mat-datepicker-calendar-date-text-color: #F6F3FF;
+}
+
+.primary-lime-btn {
+  background-color: #B8FF3B !important;
+  color: #120B24 !important;
+  font-weight: 600 !important;
+}
+
+.cosmic-header {
+  background-color: #160E2C !important;
+  border-bottom: 1px solid #382864;
+  color: #F6F3FF !important;
+}
+
+.header-inner {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.brand-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #B8FF3B;
+  margin-right: 0.75rem;
+}
+
+.brand-subtitle {
+  font-size: 0.85rem;
+  color: #BEB4DE;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.8rem;
+}
+
+.status-pill {
+  padding: 0.3rem 0.75rem;
+  background: #1B1233;
+  border: 1px solid #382864;
+  color: #38BDF8;
+}
+
+.cosmic-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.cosmic-footer {
+  border-top: 1px solid #2E2054;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #8D81B3;
+}

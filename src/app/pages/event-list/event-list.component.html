@@ -1,0 +1,301 @@
+<div class="planner-shell">
+  <!-- Natal Telemetry + Period & Year Controls -->
+  <section class="planner-toolbar">
+    <div>
+      <p class="natal-telemetry">
+        <strong>{{ eventService.natalChart().profile.name }}</strong> ·
+        ☉ {{ eventService.natalChart().sunSign }} ·
+        ☽ {{ eventService.natalChart().moonSign }} ·
+        AC {{ eventService.natalChart().ascendantSign }} ·
+        <span class="lime-accent">
+          ⚷ Chiron {{ formatDegree(eventService.natalChart().placements.Chiron.degree) }}
+          {{ eventService.natalChart().chironSign }}
+        </span>
+      </p>
+      <h1 class="period-heading">{{ formattedMonthHeading() }}</h1>
+    </div>
+
+<div class="toolbar-actions">
+      <!-- Segmented Stepper: ‹ | Today | › -->
+      <div class="segmented-bar" role="group" aria-label="Date navigation">
+        <button type="button" class="seg-btn seg-icon" (click)="stepPeriod(-1)" aria-label="Previous">
+          ‹
+        </button>
+        <button type="button" class="seg-btn seg-divider" (click)="resetToToday()">
+          Today
+        </button>
+        <button type="button" class="seg-btn seg-icon" (click)="stepPeriod(1)" aria-label="Next">
+          ›
+        </button>
+      </div>
+
+      <!-- Segmented Year Switcher: 2026 | 2027 -->
+      <div class="segmented-bar padded-bar" role="group" aria-label="Year selector">
+        @for (yr of [2026, 2027]; track yr) {
+          <button
+            type="button"
+            class="seg-btn"
+            [class.seg-active-sky]="selectedDate().startsWith(yr.toString())"
+            (click)="jumpToYear(yr)"
+          >
+            {{ yr }}
+          </button>
+        }
+      </div>
+
+      <!-- Segmented Timeframe Switcher: Day | Week | Month | Year -->
+      <div class="segmented-bar padded-bar" role="tablist" aria-label="Planner timeframe">
+        @for (view of timeframeOptions; track view) {
+          <button
+            type="button"
+            role="tab"
+            class="seg-btn capitalize-label"
+            [attr.aria-selected]="activeTimeframe() === view"
+            [class.seg-active-lime]="activeTimeframe() === view"
+            (click)="activeTimeframe.set(view)"
+          >
+            {{ view }}
+          </button>
+        }
+      </div>
+
+      <button mat-flat-button type="button" class="sharp-lime-cta" (click)="openCreateForm()">
+        + Create Custom Alignment
+      </button>
+    </div>
+  </section>
+
+  <!-- Sort / Filter Chips by Alignment Category -->
+  <section class="filter-bar">
+    <div class="chip-row">
+      <button
+        type="button"
+        class="filter-chip"
+        [class.chip-all-selected]="categoryFilter() === 'all'"
+        (click)="categoryFilter.set('all')"
+      >
+        All Alignments
+      </button>
+      <button
+        type="button"
+        class="filter-chip lime-chip"
+        [class.chip-lime-selected]="categoryFilter() === 'activation'"
+        (click)="categoryFilter.set(categoryFilter() === 'activation' ? 'all' : 'activation')"
+      >
+        Natal Activations
+      </button>
+      <button
+        type="button"
+        class="filter-chip sky-chip"
+        [class.chip-sky-selected]="categoryFilter() === 'transit'"
+        (click)="categoryFilter.set(categoryFilter() === 'transit' ? 'all' : 'transit')"
+      >
+        Planetary Shifts
+      </button>
+      <button
+        type="button"
+        class="filter-chip sky-chip"
+        [class.chip-sky-selected]="categoryFilter() === 'lunation'"
+        (click)="categoryFilter.set(categoryFilter() === 'lunation' ? 'all' : 'lunation')"
+      >
+        Moon Phases
+      </button>
+      <button
+        type="button"
+        class="filter-chip orange-chip"
+        [class.chip-orange-selected]="categoryFilter() === 'retrograde'"
+        (click)="categoryFilter.set(categoryFilter() === 'retrograde' ? 'all' : 'retrograde')"
+      >
+        Retrogrades
+      </button>
+      <button
+        type="button"
+        class="filter-chip lime-chip"
+        [class.chip-lime-selected]="categoryFilter() === 'custom'"
+        (click)="categoryFilter.set(categoryFilter() === 'custom' ? 'all' : 'custom')"
+      >
+        Custom Rituals
+      </button>
+      <button
+        type="button"
+        class="filter-chip orange-chip"
+        [class.chip-orange-selected]="highIntensityOnly()"
+        (click)="highIntensityOnly.set(!highIntensityOnly())"
+      >
+        🔥 High Intensity
+      </button>
+    </div>
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Filter sign, planet, ritual...</mat-label>
+      <input
+        matInput
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </mat-form-field>
+  </section>
+
+  <!-- Asymmetric 2-Column Split: Calendar + Selected Day Agenda (Left) | Live Bi-Wheel / Forms (Right) -->
+  <div class="planner-grid">
+    <div class="main-stage">
+      <!-- Interactive 42-Cell Monthly Calendar Grid -->
+      @if (activeTimeframe() === 'month') {
+        <div class="calendar-matrix">
+          <div class="weekday-row">
+            @for (wd of weekdayLabels; track wd) {
+              <div class="weekday-header">{{ wd }}</div>
+            }
+          </div>
+
+          <div class="days-grid">
+            @for (cell of monthCalendarCells(); track cell.date) {
+              <button
+                type="button"
+                class="day-cell"
+                [class.day-selected]="cell.date === selectedDate()"
+                [class.day-outside]="!cell.inCurrentMonth"
+                (click)="selectCalendarDate(cell.date)"
+              >
+                <div class="day-top">
+                  <span class="day-number">{{ cell.dayNumber }}</span>
+                  <span class="day-indicators">
+                    @if (cell.lunarPhase) {
+                      <span class="moon-dot">{{ cell.lunarPhase === 'Full Moon' ? '○' : '●' }}</span>
+                    }
+                    @if (cell.hasHighIntensity) {
+                      <span class="peak-triangle">▲</span>
+                    }
+                  </span>
+                </div>
+
+                <div class="day-pills">
+                  @for (ev of cell.exactEvents.slice(0, 2); track ev.id) {
+                    <div
+                      class="mini-pill"
+                      [class.pill-high]="ev.intensity === 'high'"
+                      [class.pill-activation]="ev.category === 'activation' && ev.intensity !== 'high'"
+                    >
+                      {{ planetGlyphs[ev.transitingPlanet] }} {{ ev.title }}
+                    </div>
+                  }
+                  @if (cell.exactEvents.length > 2) {
+                    <div class="more-count">+{{ cell.exactEvents.length - 2 }} more</div>
+                  }
+                  @if (cell.exactEvents.length === 0 && cell.hasActiveRetrograde && cell.inCurrentMonth) {
+                    <div class="rx-bar"></div>
+                  }
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Selected Day (or Active Window) Alignments Agenda -->
+      <section class="selected-day-section">
+        <div class="agenda-header">
+          <h2>
+            Selected Day: <span class="lime-accent mono-text">{{ selectedDate() }}</span>
+          </h2>
+          <span class="count-label">{{ selectedDayEvents().length }} alignment(s)</span>
+        </div>
+
+        @if (selectedDayEvents().length === 0) {
+          <div class="empty-state">
+            <p>No exact peak alignments on {{ selectedDate() }}. Click any highlighted calendar day above to inspect its transits, or create a custom ritual.</p>
+          </div>
+        } @else {
+          <div class="events-column">
+            @for (event of selectedDayEvents(); track event.id) {
+              <article
+                class="transit-card"
+                [class.high-intensity]="event.intensity === 'high'"
+                [class.selected-card]="selectedEventId() === event.id"
+                (click)="openEventDetails(event)"
+              >
+                <div class="card-meta">
+                  <span class="category-label">{{ event.category.toUpperCase() }}</span>
+                  <span>·</span>
+                  <span class="mono-text">
+                    {{ planetGlyphs[event.transitingPlanet] }}
+                    {{ formatDegree(event.transitingDegree) }}
+                    {{ zodiacGlyphs[event.transitingSign] }} {{ event.transitingSign }}
+                  </span>
+                  <span>·</span>
+                  <span>{{ houseThemes[event.houseActivated].name }}</span>
+                  @if (event.intensity === 'high') {
+                    <span class="orange-accent">· 🔥 High Intensity</span>
+                  }
+                </div>
+
+                <div class="card-title-row">
+                  <h3>{{ event.title }}</h3>
+                  <span class="date-tag">{{ event.timeWindow }}</span>
+                </div>
+
+                <p class="card-summary">{{ event.summary }}</p>
+
+                <div class="card-footer">
+                  <span>Ritual: <strong>{{ event.ritualTitle }}</strong> ({{ event.ritualDuration }})</span>
+                  <div class="card-actions">
+                    <span class="inspect-link">RSVP &amp; Reflect →</span>
+                    @if (event.isCustom) {
+                      <button
+                        mat-button
+                        color="warn"
+                        type="button"
+                        (click)="deleteCustomAlignment(event, $event)"
+                      >
+                        Delete
+                      </button>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+
+    <!-- Right Column: Reactive Form OR Template-Driven RSVP Form OR Live Bi-Wheel Compass -->
+    <aside class="inspector-column">
+      @if (isCreatingNewEvent()) {
+        <div class="panel-box">
+          <h2>Schedule Custom Cosmic Alignment</h2>
+          <p class="panel-subtitle">Reactive Form with Async Title &amp; Date-Range Validation</p>
+          <app-event-form
+            (alignmentCreated)="handleAlignmentCreated($event)"
+            (cancelled)="isCreatingNewEvent.set(false)"
+          />
+        </div>
+      } @else {
+        @if (selectedEvent(); as activeEvent) {
+          <div class="selected-inspector-wrap">
+            <div class="inspector-topbar">
+              <button mat-button type="button" (click)="selectedEventId.set(null)">
+                ← Back to Live Bi-Wheel
+              </button>
+            </div>
+            <app-event-details [event]="activeEvent" />
+          </div>
+        } @else {
+          <div class="panel-box">
+            <h2>Live Bi-Wheel Compass</h2>
+            <p class="panel-subtitle">
+              Natal placements vs. sky transits on <span class="mono-text">{{ selectedDate() }}</span>
+            </p>
+            <app-bi-wheel-chart
+              [natalChart]="eventService.natalChart()"
+              [selectedDate]="selectedDate()"
+              [focusedPlanet]="focusedPlanet()"
+              (planetSelected)="focusedPlanet.set($event)"
+            />
+          </div>
+        }
+      }
+    </aside>
+  </div>
+</div>
